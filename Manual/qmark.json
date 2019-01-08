@@ -1,0 +1,19 @@
+{
+    "Author": "DVD",
+    "Compatibility": "Compatible",
+    "DefuserDifficulty": "Easy",
+    "Description": "Press the letters of the word \"UNRELATED\" in a given order. Tags: keypad, 9-buttons, letters, undertale, unrelated",
+    "ExpertDifficulty": "Easy",
+    "ModuleID": "unrelatedAnagrams",
+    "Name": "Unrelated Anagrams",
+    "Origin": "Mods",
+    "Published": "2019-01-08",
+    "RuleSeedSupport": "NotSupported",
+    "SortKey": "UNRELATEDANAGRAMS",
+    "SourceUrl": "https://github.com/DVD8084/KTaNE_UnrelatedAnagrams",
+    "SteamID": "1618751952",
+    "Symbol": "Qm",
+    "TwitchPlaysScore": 0,
+    "TwitchPlaysSupport": "Supported",
+    "Type": "Regular"
+}
