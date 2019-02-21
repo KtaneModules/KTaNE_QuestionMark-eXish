@@ -13,14 +13,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: Questionmark
   title: Question Mark
-  description: 'Look, someone made the lucky block from Minecraft into a module!
-
-    Idea by Mirage Xel, implementation by DVD.
-
-
-    Manual [HTML]: Coming soon.
-
-    Manual [PDF]: Coming soon.'
+  description: "Look, someone made the lucky block from Minecraft into a module!\nIdea
+    by Mirage Xel, implementation by DVD.\n\nManual [HTML]: https://ktane.timwi.de/HTML/Question%20Mark.html\r\nManual
+    [PDF]: https://ktane.timwi.de/PDF/Question%20Mark.pdf"
   version: 1.0
   outputFolder: build
   previewImage: {fileID: 2800000, guid: 7be49aab750d78f4d86459eafe554abb, type: 3}

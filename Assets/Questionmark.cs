@@ -16,6 +16,7 @@ public class Questionmark : MonoBehaviour
     private int[] spriteValues = new[] {2, 1, 7, 3, 4, 9, 6, 8, 1, 3, 8, 4, 5, 6, 2};
     private int deathSprite = 4;
     private bool isHeld = false;
+    private bool isSolved = false;
     private static int _moduleIdCounter = 1;
     private int _moduleId = 0;
 
@@ -34,62 +35,74 @@ public class Questionmark : MonoBehaviour
     {
         module.OnInteract += delegate() {OnPress(); return false;};
         module.OnInteractEnded += OnRelease;
-        module.OnCancel += delegate(){OnRelease(); return true;};
+        module.OnCancel += delegate(){isHeld = false; return true;};
+        GetComponent<KMBombModule>().OnPass += delegate(){isSolved = true; return true;};
     }
     
     void OnPress()
     {
-        module.AddInteractionPunch();
-        isHeld = true;
-        spritePool[0] = UnityEngine.Random.Range(0, 15);
-        spritePool[1] = UnityEngine.Random.Range(0, 15);
-        do
+        GetComponent<KMAudio>().PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, transform);
+        if (!isSolved)
         {
+            module.AddInteractionPunch();
+            isHeld = true;
+            spritePool[0] = UnityEngine.Random.Range(0, 15);
             spritePool[1] = UnityEngine.Random.Range(0, 15);
-        } while (spritePool[1] == spritePool[0]);
-        spritePool[2] = UnityEngine.Random.Range(0, 15);
-        do
-        {
+            do
+            {
+                spritePool[1] = UnityEngine.Random.Range(0, 15);
+            } while (spritePool[1] == spritePool[0]);
             spritePool[2] = UnityEngine.Random.Range(0, 15);
-        } while (spritePool[2] == spritePool[0] || spritePool[2] == spritePool[1]);
-        spritePool[3] = UnityEngine.Random.Range(0, 15);
-        do
-        {
+            do
+            {
+                spritePool[2] = UnityEngine.Random.Range(0, 15);
+            } while (spritePool[2] == spritePool[0] || spritePool[2] == spritePool[1]);
             spritePool[3] = UnityEngine.Random.Range(0, 15);
-        } while (spritePool[3] == spritePool[0] || spritePool[3] == spritePool[1] || spritePool[3] == spritePool[2]);
-        Debug.LogFormat("[Question Mark #{0}] Module activated.", _moduleId);
-        Debug.LogFormat("[Question Mark #{0}] Sprite pool is: {1}-{2}, {3}-{4}, {5}-{6}, {7}-{8}.", _moduleId, spritePool[0] / 5 + 1, spritePool[0] % 5 + 1, spritePool[1] / 5 + 1, spritePool[1] % 5 + 1, spritePool[2] / 5 + 1, spritePool[2] % 5 + 1, spritePool[3] / 5 + 1, spritePool[3] % 5 + 1);
-        Debug.LogFormat("[Question Mark #{0}] Sprite values are: {1}, {2}, {3}, {4}.", _moduleId, spriteValues[spritePool[0]], spriteValues[spritePool[1]], spriteValues[spritePool[2]], spriteValues[spritePool[3]]);
-        int sum = spriteValues[spritePool[0]] + spriteValues[spritePool[1]] + spriteValues[spritePool[2]] + spriteValues[spritePool[3]];
-        Debug.LogFormat("[Question Mark #{0}] New sprite is: {1}-{2}.", _moduleId, (sum + 14) % 15 / 5 + 1, (sum + 4) % 5 + 1);
-        releaseTimes = ReleaseTimes();
-        StartCoroutine(OnHold());
+            do
+            {
+                spritePool[3] = UnityEngine.Random.Range(0, 15);
+            } while (spritePool[3] == spritePool[0] || spritePool[3] == spritePool[1] || spritePool[3] == spritePool[2]);
+            Debug.LogFormat("[Question Mark #{0}] Module activated.", _moduleId);
+            Debug.LogFormat("[Question Mark #{0}] Sprite pool is: {1}-{2}, {3}-{4}, {5}-{6}, {7}-{8}.", _moduleId, spritePool[0] / 5 + 1, spritePool[0] % 5 + 1, spritePool[1] / 5 + 1, spritePool[1] % 5 + 1, spritePool[2] / 5 + 1, spritePool[2] % 5 + 1, spritePool[3] / 5 + 1, spritePool[3] % 5 + 1);
+            Debug.LogFormat("[Question Mark #{0}] Sprite values are: {1}, {2}, {3}, {4}.", _moduleId, spriteValues[spritePool[0]], spriteValues[spritePool[1]], spriteValues[spritePool[2]], spriteValues[spritePool[3]]);
+            int sum = spriteValues[spritePool[0]] + spriteValues[spritePool[1]] + spriteValues[spritePool[2]] + spriteValues[spritePool[3]];
+            Debug.LogFormat("[Question Mark #{0}] New sprite is: {1}-{2}.", _moduleId, (sum + 14) % 15 / 5 + 1, (sum + 4) % 5 + 1);
+            releaseTimes = ReleaseTimes();
+            StartCoroutine(OnHold());
+        }
     }
 
     IEnumerator OnHold()
     {
-        int count = 0;
-        while (isHeld) {
-            moduleSprite.sprite = itemSprites[spritePool[count++]];
-            count %= 4;
-            yield return new WaitForSeconds(0.35f);
+        if (!isSolved)
+        {
+            int count = 0;
+            while (isHeld) {
+                moduleSprite.sprite = itemSprites[spritePool[count++]];
+                count %= 4;
+                yield return new WaitForSeconds(0.35f);
+            }   
         }
     }
     
     void OnRelease()
     {
-        isHeld = false;
-        int time = (int)Math.Floor(info.GetTime());
-        if (releaseTimes.Contains(time % 10))
+        if (!isSolved)
         {
-            Debug.LogFormat("[Question Mark #{0}] Released at {1}. That is correct.", _moduleId, info.GetFormattedTime());
-            GetComponent<KMBombModule>().HandlePass();
-        }
-        else
-        {
-            Debug.LogFormat("[Question Mark #{0}] Released at {1}. That is incorrect.", _moduleId, info.GetFormattedTime());
-            moduleSprite.sprite = qmarkSprite;
-            GetComponent<KMBombModule>().HandleStrike();
+            isHeld = false;
+            int time = (int)Math.Floor(info.GetTime());
+            if (releaseTimes.Contains(time % 10))
+            {
+                Debug.LogFormat("[Question Mark #{0}] Released at {1}. That is correct.", _moduleId, info.GetFormattedTime());
+                GetComponent<KMAudio>().PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.CorrectChime, transform);
+                GetComponent<KMBombModule>().HandlePass();
+            }
+            else
+            {
+                Debug.LogFormat("[Question Mark #{0}] Released at {1}. That is incorrect.", _moduleId, info.GetFormattedTime());
+                moduleSprite.sprite = qmarkSprite;
+                GetComponent<KMBombModule>().HandleStrike();
+            }
         }
     }
     
