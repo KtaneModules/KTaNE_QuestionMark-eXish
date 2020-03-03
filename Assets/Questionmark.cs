@@ -23,6 +23,12 @@ public class Questionmark : MonoBehaviour
     void Start()
     {
         _moduleId = _moduleIdCounter++;
+
+        module.OnInteract += delegate () { OnPress(); return false; };
+        module.OnInteractEnded += OnRelease;
+        module.OnCancel += delegate () { isHeld = false; return true; };
+        GetComponent<KMBombModule>().OnPass += delegate () { isSolved = true; return true; };
+
         GetComponent<KMBombModule>().OnActivate += ActivateModule;
     }
 
@@ -33,15 +39,17 @@ public class Questionmark : MonoBehaviour
     
     void Init()
     {
-        module.OnInteract += delegate() {OnPress(); return false;};
+        moduleSprite.sprite = qmarkSprite;
+        /**module.OnInteract += delegate () { OnPress(); return false; };
         module.OnInteractEnded += OnRelease;
-        module.OnCancel += delegate(){isHeld = false; return true;};
-        GetComponent<KMBombModule>().OnPass += delegate(){isSolved = true; return true;};
+        module.OnCancel += delegate () { isHeld = false; return true; };
+        GetComponent<KMBombModule>().OnPass += delegate () { isSolved = true; return true; };*/
     }
     
     void OnPress()
     {
         GetComponent<KMAudio>().PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, transform);
+        GetComponent<KMAudio>().PlaySoundAtTransform("powerupappears", transform);
         if (!isSolved)
         {
             module.AddInteractionPunch();
@@ -63,6 +71,7 @@ public class Questionmark : MonoBehaviour
                 spritePool[3] = UnityEngine.Random.Range(0, 15);
             } while (spritePool[3] == spritePool[0] || spritePool[3] == spritePool[1] || spritePool[3] == spritePool[2]);
             Debug.LogFormat("[Question Mark #{0}] Module activated.", _moduleId);
+            Debug.LogFormat("[Question Mark #{0}] Sprites are referenced in the format of #-#2 where # is the row and #2 is the column in the table in the manual", _moduleId);
             Debug.LogFormat("[Question Mark #{0}] Sprite pool is: {1}-{2}, {3}-{4}, {5}-{6}, {7}-{8}.", _moduleId, spritePool[0] / 5 + 1, spritePool[0] % 5 + 1, spritePool[1] / 5 + 1, spritePool[1] % 5 + 1, spritePool[2] / 5 + 1, spritePool[2] % 5 + 1, spritePool[3] / 5 + 1, spritePool[3] % 5 + 1);
             Debug.LogFormat("[Question Mark #{0}] Sprite values are: {1}, {2}, {3}, {4}.", _moduleId, spriteValues[spritePool[0]], spriteValues[spritePool[1]], spriteValues[spritePool[2]], spriteValues[spritePool[3]]);
             int sum = spriteValues[spritePool[0]] + spriteValues[spritePool[1]] + spriteValues[spritePool[2]] + spriteValues[spritePool[3]];
@@ -94,7 +103,8 @@ public class Questionmark : MonoBehaviour
             if (releaseTimes.Contains(time % 10))
             {
                 Debug.LogFormat("[Question Mark #{0}] Released at {1}. That is correct.", _moduleId, info.GetFormattedTime());
-                GetComponent<KMAudio>().PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.CorrectChime, transform);
+                //GetComponent<KMAudio>().PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.CorrectChime, transform);
+                GetComponent<KMAudio>().PlaySoundAtTransform("powerup", transform);
                 GetComponent<KMBombModule>().HandlePass();
             }
             else
@@ -114,7 +124,7 @@ public class Questionmark : MonoBehaviour
             time += spriteValues[spritePool[i]];
         }
         time = (time + 14) % 15;
-        if (spritePool.Contains(time))
+        if (spritePool.Contains(time) && time != deathSprite)
         {
             Debug.LogFormat("[Question Mark #{0}] Closest sprite's value is: {1}.", _moduleId, spriteValues[time]);
             return new[] {spriteValues[time]};
@@ -167,14 +177,25 @@ public class Questionmark : MonoBehaviour
     private string TwitchHelpMessage = "Hold the module with \"hold\". Release the module with \"release <digit> <digit> ...\". Manual";
     #pragma warning restore 0414
 
-    public void TwitchHandleForcedSolve()
+    public IEnumerator TwitchHandleForcedSolve()
     {
-        isHeld = false;
+        if (!isHeld)
+        {
+            module.OnInteract();
+            yield return new WaitForSeconds(0.1f);
+        }
+        while (!releaseTimes.Contains((int)info.GetTime() % 10))
+        {
+            yield return true;
+            yield return new WaitForSeconds(0.1f);
+        }
+        module.OnInteractEnded();
+        /**isHeld = false;
         int sprite = UnityEngine.Random.Range(0, 14);
         sprite += (sprite < deathSprite) ? 0 : 1;
         moduleSprite.sprite = itemSprites[sprite];
         Debug.LogFormat("[Question Mark #{0}] Module forcibly solved.", _moduleId);
-        GetComponent<KMBombModule>().HandlePass();
+        GetComponent<KMBombModule>().HandlePass();*/
     }
 
     public IEnumerator ProcessTwitchCommand(string cmd)
@@ -251,6 +272,14 @@ public class Questionmark : MonoBehaviour
             {
                 yield return "sendtochaterror No valid release times specified.";
                 yield break;
+            }
+            else if (releaseTimes.Contains(targetTime))
+            {
+                yield return "solve";
+            }
+            else
+            {
+                yield return "strike";
             }
             
             yield return "sendtochat Target release time: " + (targetTime / 60).ToString("D2") + ":" + (targetTime % 60).ToString("D2");

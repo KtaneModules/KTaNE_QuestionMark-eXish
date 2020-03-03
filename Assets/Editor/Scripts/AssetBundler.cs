@@ -97,7 +97,7 @@ public class AssetBundler
 
         bundler.assemblyName = ModConfig.ID;
         bundler.outputFolder = ModConfig.OutputFolder + "/" + bundler.assemblyName;
-        if (Application.platform == RuntimePlatform.OSXEditor) bundler.target = BuildTarget.StandaloneOSXUniversal;
+        if (Application.platform == RuntimePlatform.OSXEditor) bundler.target = BuildTarget.StandaloneOSX;
 
         bool success = false;
 
@@ -258,7 +258,6 @@ public class AssetBundler
         }
 
         managedReferences.Add(unityAssembliesLocation + "UnityEngine");
-        managedReferences.Add(unityAssembliesLocation + "../UnityExtensions/Unity/GUISystem/UnityEngine.UI");
 
         //Next we need to grab some type references and use reflection to build things the way Unity does.
         //Note that EditorUtility.CompileCSharp will do *almost* exactly the same thing, but it unfortunately
