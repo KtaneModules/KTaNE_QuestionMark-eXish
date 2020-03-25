@@ -245,6 +245,7 @@ public class Questionmark : MonoBehaviour
             
             int currentTime = (int)info.GetTime();
             int targetTime = -1;
+            int corrTime = 0;
             
             if (TwitchZenMode)
             {
@@ -252,7 +253,11 @@ public class Questionmark : MonoBehaviour
                 {
                     int t = time;
                     while(t < currentTime) t += 10;
-                    if(t < targetTime || targetTime == -1) targetTime = t;
+                    if (t < targetTime || targetTime == -1)
+                    {
+                        targetTime = t;
+                        corrTime = time;
+                    }
                 }
             }
             else
@@ -265,7 +270,11 @@ public class Questionmark : MonoBehaviour
                         t += 10;
                     }
                     t -= 10;
-                    if(t > targetTime) targetTime = t;
+                    if (t > targetTime)
+                    {
+                        targetTime = t;
+                        corrTime = time;
+                    }
                 }
             }
             
@@ -274,7 +283,7 @@ public class Questionmark : MonoBehaviour
                 yield return "sendtochaterror No valid release times specified.";
                 yield break;
             }
-            else if (releaseTimes.Contains(targetTime))
+            else if (releaseTimes.Contains(corrTime))
             {
                 yield return "solve";
             }
