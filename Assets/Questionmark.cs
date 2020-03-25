@@ -27,7 +27,7 @@ public class Questionmark : MonoBehaviour
         module.OnInteract += delegate () { OnPress(); return false; };
         module.OnInteractEnded += OnRelease;
         module.OnCancel += delegate () { isHeld = false; return true; };
-        GetComponent<KMBombModule>().OnPass += delegate () { isSolved = true; return true; };
+        //GetComponent<KMBombModule>().OnPass += delegate () { isSolved = true; return true; };
 
         GetComponent<KMBombModule>().OnActivate += ActivateModule;
     }
@@ -106,6 +106,7 @@ public class Questionmark : MonoBehaviour
                 //GetComponent<KMAudio>().PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.CorrectChime, transform);
                 GetComponent<KMAudio>().PlaySoundAtTransform("powerup", transform);
                 GetComponent<KMBombModule>().HandlePass();
+                isSolved = true;
             }
             else
             {
