@@ -28,31 +28,15 @@ public class Questionmark : MonoBehaviour
         module.OnInteractEnded += OnRelease;
         module.OnCancel += delegate () { isHeld = false; return true; };
         //GetComponent<KMBombModule>().OnPass += delegate () { isSolved = true; return true; };
-
-        GetComponent<KMBombModule>().OnActivate += ActivateModule;
-    }
-
-    void ActivateModule()
-    {
-        Init();
-    }
-    
-    void Init()
-    {
-        moduleSprite.sprite = qmarkSprite;
-        /**module.OnInteract += delegate () { OnPress(); return false; };
-        module.OnInteractEnded += OnRelease;
-        module.OnCancel += delegate () { isHeld = false; return true; };
-        GetComponent<KMBombModule>().OnPass += delegate () { isSolved = true; return true; };*/
     }
     
     void OnPress()
     {
-        GetComponent<KMAudio>().PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, transform);
-        GetComponent<KMAudio>().PlaySoundAtTransform("powerupappears", transform);
         if (!isSolved)
         {
             module.AddInteractionPunch();
+            GetComponent<KMAudio>().PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, transform);
+            GetComponent<KMAudio>().PlaySoundAtTransform("powerupappears", transform);
             isHeld = true;
             spritePool[0] = UnityEngine.Random.Range(0, 15);
             spritePool[1] = UnityEngine.Random.Range(0, 15);
@@ -175,7 +159,7 @@ public class Questionmark : MonoBehaviour
     #pragma warning disable 0414
     private bool TwitchZenMode = false;
     private string TwitchManualCode = "Question Mark";
-    private string TwitchHelpMessage = "Hold the module with \"hold\". Release the module with \"release <digit> <digit> ...\". Manual";
+    private string TwitchHelpMessage = "Hold the module with \"hold\". Release the module with \"release <digit> <digit> ...\".";
     #pragma warning restore 0414
 
     public IEnumerator TwitchHandleForcedSolve()
@@ -188,7 +172,6 @@ public class Questionmark : MonoBehaviour
         while (!releaseTimes.Contains((int)info.GetTime() % 10))
         {
             yield return true;
-            yield return new WaitForSeconds(0.1f);
         }
         module.OnInteractEnded();
         /**isHeld = false;
